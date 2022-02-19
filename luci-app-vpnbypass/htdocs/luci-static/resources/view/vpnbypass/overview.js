@@ -6,6 +6,8 @@
 'require uci';
 'require view';
 'require vpnbypass.widgets as widgets';
+'require tools.widgets as owrtwidgets';
+
 
 var pkg = {
 	get Name() { return 'vpnbypass'; },
@@ -31,6 +33,14 @@ return view.extend({
 		o = s.option(widgets.Status, '', _('Service Status'));
 
 		o = s.option(widgets.Buttons, '', _('Service Control'));
+
+		o = s.option(owrtwidgets.NetworkSelect, 'interface', _('Network interface to use'));
+		o.noaliases = true;
+		o.noinactive = true;
+		o.rmempty = false;
+		o.optional = false;
+		o.nobridges = true;
+
 
 		o = s.option(form.DynamicList, 'localport', _('Local Ports to Bypass'), _('Local ports to trigger VPN Bypass.'));
 		o.datatype = 'portrange';

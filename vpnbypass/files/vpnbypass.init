@@ -64,16 +64,7 @@ load_package_config() {
 is_enabled() {
 	local sleepCount=1
 	load_package_config
-	while : ; do
-		network_find_wan wan_if4
-		[ "$serviceEnabled" -gt 0 ] || return 1
-		[ -n "$wan_if4" ] && network_get_gateway wan_gw "$wan_if4"
-		if [ $sleepCount -ge 25 ] || [ -n "$wan_gw" ]; then break; fi
-		output "$serviceName waiting for wan gateway...\\n"
-		sleep 2; network_flush_cache; sleepCount=$((sleepCount+1));
-	done
-	[ -n "$wan_gw" ] && return 0
-	output "$__ERROR__: $serviceName failed to discover WAN gateway.\\n"; return 1;
+	return 0
 }
 
 is_ovpn() { local dev i; for i in ifname device; do [ -z "$dev" ] && dev="$(uci -q get "network.${1}.${i}")"; done; if [ "${dev:0:3}" = "tun" ] || [ "${dev:0:3}" = "tap" ] || [ -f "/sys/devices/virtual/net/${dev}/tun_flags" ]; then return 0; else return 1; fi; }
@@ -96,6 +87,10 @@ start_service() {
 	config_get rports   'config' 'remoteport'
 	config_get routes   'config' 'remotesubnet'
 	config_get ranges   'config' 'localsubnet'
+        config_get interface    'config' 'interface'
+
+        network_get_gateway wan_gw $interface
+        logger -t vpnbypass "detect: $wan_gw $interface"
 
 	procd_open_instance "main"
 	procd_set_param command /bin/true
